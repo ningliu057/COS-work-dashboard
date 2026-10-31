@@ -2,6 +2,7 @@
 <html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>My Work Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <style>
 :root{--bg:#f7f3ee;--card:#fffdfa;--tx:#3b342e;--mu:#8c8176;--ln:#e9e1d7;--ac:#6f8460;--ac2:#e4eadb;--ok:#4d7c3a;--bad:#b4493d;--warn:#a8741a;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1a17;--card:#26231f;--tx:#efe9e1;--mu:#a1968a;--ln:#38332d;--ac:#a5b894;--ac2:#37402f;--ok:#9ccc84;--bad:#f08a7c;--warn:#e6b85c;color-scheme:dark}}
@@ -116,18 +117,31 @@ const unread=()=>NOTES.filter(n=>!S.noteRead[n.key]).length;
 function openLink(l){const[k,v]=l.split(':');if(k==='sh'){const s=S.shifts.find(x=>x.id===v);if(s){cur=pd(s.date);page='cal';render();shiftForm(v)}}else{cur=pd(v+'-01');go(k)}}
 /* ===== 儲存 ===== */
 function persist(){stat='儲存中…';sv();clearTimeout(saveT);saveT=setTimeout(async()=>{
- try{localStorage.setItem('mwd',JSON.stringify(S))}catch(e){}
- try{if(dbDoc){await dbDoc.set({json:JSON.stringify(S)});stat='已儲存 ✓'}else stat='僅存本機（未連線雲端）'}catch(e){stat='儲存失敗：'+(e.message||e.code)}sv()},500)}
+  try{if(dbDoc){await dbDoc.set({json:JSON.stringify(S)});stat='已儲存 ✓'}else stat='尚未登入'}catch(e){stat='儲存失敗：'+(e.message||e.code)}sv()},500)}
 const sv=()=>{const e=$('#sv');if(e)e.textContent=stat};
 const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2200)};
 function load(o){S=Object.assign(DEF(),o);S.notif=Object.assign(DEF().notif,o.notif);S.shifts.forEach(s=>{if(s.status==='預排'||s.status==='已完成')s.status='正常'})}
+const SB_URL='https://pcnpgixymymcpurosqqu.supabase.co',SB_KEY='sb_publishable_f7LeRVI6U0GUV62ZMp8bXg_s06vhunw';
+let sb=null,uidU=null;
 async function init(){
- try{const l=localStorage.getItem('mwd');if(l)load(JSON.parse(l))}catch(e){}
- render();
- try{const db=await claude.use('db'),u=await claude.use('user');
-  if(db&&u){dbDoc=db.collection('data/users/'+await u.id()).doc('app');const sn=await dbDoc.get();
-   if(sn.exists&&sn.data().json)load(JSON.parse(sn.data().json));stat='已儲存 ✓';if(!sn.exists)persist()}else stat='僅存本機（未連線雲端）'}catch(e){stat='僅存本機'}
- render();setInterval(()=>{if(!$('#modal').style.display||$('#modal').style.display==='none')render()},60000)}
+ try{sb=supabase.createClient(SB_URL,SB_KEY)}catch(e){$('#main').innerHTML='<div class="card bad">無法載入 Supabase，請檢查網路後重新整理。</div>';return}
+ const{data:{session}}=await sb.auth.getSession();
+ if(session)await enter(session.user);else loginUI()}
+async function enter(user){uidU=user.id;S=DEF();
+ const{data,error}=await sb.from('app_data').select('data').eq('user_id',uidU).maybeSingle();
+ if(error){$('#main').innerHTML='<div class="card bad">讀取資料失敗：'+esc(error.message)+'<br>請確認已在 Supabase 執行建立資料表的 SQL。</div>';return}
+ if(data&&data.data&&data.data.json)load(JSON.parse(data.data.json));
+ dbDoc={set:async d=>{const{error}=await sb.from('app_data').upsert({user_id:uidU,data:d,updated_at:new Date().toISOString()});if(error)throw error}};
+ $('#nav').style.display='';$('#tab').style.display='';stat='已連線雲端';if(!data)persist();render();
+ if(!window._iv)window._iv=setInterval(()=>{if(dbDoc&&(!$('#modal').style.display||$('#modal').style.display==='none'))render()},60000)}
+function loginUI(){dbDoc=null;$('#nav').style.display='none';$('#tab').style.display='none';
+ $('#main').innerHTML=`<div class="card" style="max-width:380px;margin:40px auto"><h2 style="margin-top:0">My Work Dashboard</h2><label>Email</label><input id="em" type="email" autocomplete="email"><label>密碼（至少 6 碼）</label><input id="pw" type="password" autocomplete="current-password"><div class="bad" id="le" style="margin-top:6px"></div><div class="acts"><button onclick="auth(1)">註冊</button><button class="p" onclick="auth(0)">登入</button></div></div>`}
+async function auth(su){const email=g('em').trim(),password=g('pw');$('#le').textContent='';if(!email||password.length<6){$('#le').textContent='請輸入 Email 與至少 6 碼密碼';return}
+ const r=su?await sb.auth.signUp({email,password}):await sb.auth.signInWithPassword({email,password});
+ if(r.error){$('#le').textContent=r.error.message;return}
+ if(!r.data.session){$('#le').textContent='請到信箱收驗證信後再登入';return}
+ await enter(r.data.session.user)}
+async function logout(){await sb.auth.signOut();S=DEF();loginUI()}
 /* ===== 共用 UI ===== */
 const NAV=[['dash','工作總覽'],['cal','排班日曆'],['tgt','每月業績目標'],['sal','薪資核對'],['log','工作紀錄'],['his','歷史紀錄'],['nt','通知中心'],['set','系統設定']];
 const TAB=[['dash','總覽'],['cal','日曆'],['tgt','目標'],['sal','薪資']];
@@ -236,7 +250,7 @@ function salP(){const m=ym(),x=sal(m),r=x.r,cl={已核對:'ok',有差異:'bad',�
  <div class="pv">實領薪資 ＝ 應發 − 扣款 ${nt(x.ded)} ＝ <b>${nt(x.net)}</b></div>
  <div class="row k2">${I('paid','實際入帳金額')}${I('date','實際入帳日期（可與工作月份不同）','date')}</div>
  <div class="row k2">${I('expDate','預計發薪日（可調整）','date')}${I('note','差額備註','text','placeholder="例：勞健保扣款"')}</div>
- <label>薪資單附件</label>${r.slip?`<div><a href="${esc(r.slip.url)}" target="_blank" rel="noopener">📎 ${esc(r.slip.name)}</a> <button class="d" onclick="setS('slip',null,1)">移除</button></div>`:''}<input type="file" accept="image/*,application/pdf" onchange="slip(this)">
+ <label>薪資單附件</label>${r.slip?`<div><a href="${esc(r.slip.url)}" target="_blank" rel="noopener">📎 ${esc(r.slip.name)}</a> <button class="d" onclick="setS('slip',null,1)">移除</button></div>`:''}<div class="sub">此版本暫不支援附件上傳，可把薪資單連結貼在上方備註欄。</div>
  <label style="margin-top:12px"><input type="checkbox" ${r.ok?'checked':''} onchange="setS('ok',this.checked,1)"> 我已對照薪資單完成核對（獎金需先於「每月業績目標」確認）</label></div>`}
 function setS(k,v,str){const m=ym();S.salary[m]=S.salary[m]||{};S.salary[m][k]=str?v:(v===''?'':+v);persist();render()}
 async function slip(i){const f=i.files[0];if(!f)return;try{const a=await claude.use('assets');if(!a){toast('此帳號無法上傳附件');return}const u=await a.upload(f);setS('slip',{name:f.name,url:u.url},1);toast('已上傳')}catch(e){toast('上傳失敗：'+(e.message||''))}}
@@ -287,7 +301,8 @@ function set(){const N=S.notif,perm=window.Notification?Notification.permission:
  <label style="margin-top:10px"><input type="checkbox" ${N.push!==false?'checked':''} onchange="S.notif.push=this.checked;persist()"> 瀏覽器推播</label>
  <div class="acts" style="justify-content:space-between;align-items:center"><span class="sub">權限：${perm}</span><button onclick="askPerm()">開啟推播權限</button></div>
  <div class="sub">推播在頁面開啟（含背景分頁）時發送；頁面關閉時只會在下次開啟後於通知中心顯示。</div></div>
- <div class="card"><b>工作紀錄類別</b><div style="margin:8px 0">${S.cats.map((c,i)=>`<span class="tag" style="margin:2px">${esc(c)} <a onclick="S.cats.splice(${i},1);persist();render()" style="cursor:pointer">✕</a></span>`).join('')}</div><div class="row k2"><input id="c_n" placeholder="新類別"><button onclick="if(g('c_n').trim()){S.cats.push(g('c_n').trim());persist();render()}">新增</button></div></div>`}
+ <div class="card"><b>工作紀錄類別</b><div style="margin:8px 0">${S.cats.map((c,i)=>`<span class="tag" style="margin:2px">${esc(c)} <a onclick="S.cats.splice(${i},1);persist();render()" style="cursor:pointer">✕</a></span>`).join('')}</div><div class="row k2"><input id="c_n" placeholder="新類別"><button onclick="if(g('c_n').trim()){S.cats.push(g('c_n').trim());persist();render()}">新增</button></div></div>
+ <div class="card"><b>帳號</b><div class="sub">資料存在雲端，換裝置登入同一個帳號即可。</div><div class="acts"><button class="d" onclick="logout()">登出</button></div></div>`}
 async function askPerm(){try{const p=await Notification.requestPermission();toast('通知權限：'+p)}catch(e){toast('此環境不支援推播')}render()}
 function addRate(){if(!g('r_d')||!g('r_v')){toast('請填寫生效日與時薪');return}S.rates=S.rates.filter(r=>r.from!==g('r_d'));S.rates.push({from:g('r_d'),rate:+g('r_v')});persist();render()}
 function delRate(f){if(S.rates.length<2)return;ask('刪除這筆時薪設定？',()=>{S.rates=S.rates.filter(r=>r.from!==f);persist();render()})}
