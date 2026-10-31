@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My Work Dashboard</title>
+<style>
+:root{--bg:#f7f3ee;--card:#fffdfa;--tx:#3b342e;--mu:#8c8176;--ln:#e9e1d7;--ac:#6f8460;--ac2:#e4eadb;--ok:#4d7c3a;--bad:#b4493d;--warn:#a8741a;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1a17;--card:#26231f;--tx:#efe9e1;--mu:#a1968a;--ln:#38332d;--ac:#a5b894;--ac2:#37402f;--ok:#9ccc84;--bad:#f08a7c;--warn:#e6b85c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1c1a17;--card:#26231f;--tx:#efe9e1;--mu:#a1968a;--ln:#38332d;--ac:#a5b894;--ac2:#37402f;--ok:#9ccc84;--bad:#f08a7c;--warn:#e6b85c;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
+#app{display:flex;min-height:100vh}
+#nav{width:196px;background:var(--card);border-right:1px solid var(--ln);padding:18px 10px;position:sticky;top:0;height:100vh;flex-shrink:0}
+#nav h1{font-size:12px;letter-spacing:.18em;color:var(--mu);margin:4px 10px 12px}
+#nav a{display:block;padding:10px 12px;border-radius:12px;cursor:pointer;margin-bottom:2px}#nav a.on{background:var(--ac2);font-weight:600}
+#tab{display:none}
+main{flex:1;min-width:0;padding:16px 18px 40px;max-width:1100px}
+.top{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.top h2{margin:0;font-size:21px;flex:1}
+.sv{font-size:11px;color:var(--mu);width:100%}
+.bell{position:relative;font-size:18px;padding:6px 10px}.bd{position:absolute;top:-4px;right:-4px;background:var(--bad);color:#fff;font-size:10px;min-width:17px;height:17px;border-radius:9px;line-height:17px;text-align:center}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}@media(min-width:760px){.grid{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:18px;padding:14px;margin-bottom:12px;box-shadow:0 1px 6px rgba(80,60,40,.05)}
+.grid .card{margin:0}.k{color:var(--mu);font-size:12px}.v{font-size:20px;font-weight:700;margin-top:2px}.sub{font-size:12px;color:var(--mu)}
+.bar{height:10px;background:var(--ln);border-radius:6px;overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:var(--ac)}
+button,input,select,textarea{font:inherit;font-size:16px;color:var(--tx);background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:9px 12px;min-height:40px}
+button{cursor:pointer}button.p{background:var(--ac);color:#fff;border-color:var(--ac)}button.d{color:var(--bad)}button.on{background:var(--ac2);font-weight:600}
+input,select,textarea{width:100%}input[type=checkbox]{width:auto;min-height:0}
+label{display:block;font-size:12px;color:var(--mu);margin:9px 0 3px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px 6px;border-bottom:1px solid var(--ln);text-align:left;white-space:nowrap}th{color:var(--mu);font-weight:500}.sc{overflow-x:auto}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}.cal .h{text-align:center;color:var(--mu);font-size:12px}
+.cell{min-height:84px;background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:3px;cursor:pointer;overflow:hidden}
+.cell.o{opacity:.4}.cell.t{border:2px solid var(--ac)}.cell b{font-size:12px;color:var(--mu)}
+.chip{font-size:11px;border-radius:7px;padding:3px 5px;margin-top:3px;background:var(--ac2);line-height:1.35;overflow:hidden}
+.chip.c{background:color-mix(in srgb,var(--ok) 22%,transparent)}.chip.l,.chip.x{background:var(--ln);color:var(--mu)}.chip.m{background:color-mix(in srgb,var(--warn) 25%,transparent)}
+.tag{display:inline-block;font-size:12px;padding:1px 9px;border-radius:10px;background:var(--ln)}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+.note{display:flex;gap:10px;padding:11px 0;border-bottom:1px solid var(--ln);cursor:pointer}.note.u b::before{content:"● ";color:var(--bad)}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;overflow:auto;padding:16px 10px;z-index:50}
+#modal>div{background:var(--card);border-radius:20px;padding:18px;width:100%;max-width:520px;max-height:92vh;overflow:auto}
+.acts{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}.pv{background:var(--bg);border-radius:12px;padding:8px 10px;margin-top:10px;font-size:13px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;background:var(--tx);color:var(--bg);padding:8px 16px;border-radius:20px;display:none;z-index:60;font-size:13px}
+@media(max-width:760px){#app{display:block}#nav{display:none}
+#tab{display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--ln);z-index:20;padding:4px 4px calc(4px + env(safe-area-inset-bottom,0px))}
+#tab a{flex:1;text-align:center;padding:8px 2px;font-size:12px;border-radius:12px;color:var(--mu)}#tab a.on{background:var(--ac2);color:var(--tx);font-weight:600}
+main{padding:12px 10px 96px}.cell{min-height:58px}.chip{font-size:10px;padding:2px 3px}.chip .x{display:none}.row{grid-template-columns:1fr}.row.k2{grid-template-columns:1fr 1fr}
+#modal{align-items:flex-end;padding:0}#modal>div{border-radius:22px 22px 0 0;max-width:none;padding-bottom:calc(18px + env(safe-area-inset-bottom,0px))}}
+</style></head><body>
+<div id="app"><div id="nav"></div><main id="main"></main></div><div id="tab"></div><div id="modal"></div><div id="toast"></div>
+<script>
+const $=s=>document.querySelector(s),P=n=>String(n).padStart(2,'0');
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-3);
+const M=t=>{if(!t)return null;const[a,b]=t.split(':').map(Number);return a*60+b};
+const span=(s,e)=>{s=M(s);e=M(e);if(s==null||e==null)return null;let d=e-s;if(d<=0)d+=1440;return d};
+const hm=m=>m==null?'—':Math.floor(m/60)+' 小時'+(m%60?' '+m%60+' 分鐘':'');
+const sh_=m=>m?Math.floor(m/60)+'h'+(m%60?P(m%60):''):'';
+const nt=n=>(n<0?'-':'')+'NT$'+Math.round(Math.abs(n||0)).toLocaleString('en-US');
+const pc=r=>r==null?'—':(r*100).toFixed(1).replace(/\.0$/,'')+'%';
+const dstr=d=>d.getFullYear()+'-'+P(d.getMonth()+1)+'-'+P(d.getDate());
+const pd=s=>new Date(s+'T00:00:00');
+const nowT=()=>new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Taipei'}));
+const today=()=>dstr(nowT());
+const WD='日一二三四五六';
+const DEF=()=>({rates:[{from:'2000-01-01',rate:210}],countLeave:false,bonusRule:'ge',defBreak:60,payDay:5,startMonth:'2026-11',holidays:'',
+ notif:{班表:true,工資:true,資料:true,dayBefore:true,hrs:2,push:true},noteRead:{},noteSeen:{},pushed:{},
+ tpls:[['A','08:00','17:00'],['A','09:00','18:00'],['B','11:00','20:00'],['C','13:00','22:00'],['C','13:30','22:30']].map(x=>({id:uid(),name:x[0],s:x[1],e:x[2],b:60,on:true})),
+ cats:['商品與銷售','顧客服務','庫存與進貨','採購與行政','系統操作','店務與營運','活動與陳列','其他'],
+ shifts:[],targets:{},salary:{},logs:[],closed:{}});
+let S=DEF(),cur=pd(today()),page='dash',cal='month',lf={r:false,c:''},nf='all',dbDoc=null,saveT,stat='載入中…';
+const ym=()=>dstr(cur).slice(0,7);
+/* ===== 核心計算 ===== */
+const schedMin=s=>Math.max(0,(span(s.ss,s.se)||0)-(+s.sb||0));
+const actMin=s=>{if(s.status==='請假'||s.status==='取消')return 0;if(!s.as||!s.ae)return null;return Math.max(0,span(s.as,s.ae)-(+s.ab||0))};
+const valid=s=>s.status==='正常'||s.status==='調班'||(s.status==='請假'&&S.countLeave);
+const worked=s=>s.status==='正常'||s.status==='調班';
+const rateAt=d=>[...S.rates].sort((a,b)=>a.from<b.from?-1:1).filter(r=>r.from<=d).pop()?.rate??210;
+const wage=s=>{const m=actMin(s);return m?Math.round(m/60*rateAt(s.date)):0};
+function calc(m){
+ const sh=S.shifts.filter(s=>s.date.startsWith(m)).sort((a,b)=>(a.date+(a.ss||''))<(b.date+(b.ss||''))?-1:1),v=sh.filter(valid);
+ const t=S.targets[m]||{},goal=+t.goal||0,total=v.reduce((a,s)=>a+schedMin(s),0);
+ const c={m,sh,goal,bonus:+t.bonus||0,confirmed:t.confirmed??null,total,sales:v.reduce((a,s)=>a+(+s.sales||0),0),
+  wages:sh.reduce((a,s)=>a+wage(s),0),mins:sh.reduce((a,s)=>a+(actMin(s)||0),0),done:sh.filter(s=>worked(s)&&s.as&&s.ae).length,plan:v.length,dt:{}};
+ v.forEach(s=>c.dt[s.id]=goal&&total?goal*schedMin(s)/total:null);
+ const z=S.closed[m];if(z)Object.assign(c,z,{closed:true});
+ c.rate=c.goal?c.sales/c.goal:null;c.hit=c.goal&&(S.bonusRule==='gt'?c.sales>c.goal:c.sales>=c.goal);c.est=c.hit?c.bonus:0;return c}
+function payDate(m){const[y,mo]=m.split('-').map(Number),h=new Set(S.holidays.split(/[\s,]+/).filter(Boolean)),d=new Date(y,mo,S.payDay);
+ for(let i=0;i<10&&(d.getDay()%6===0||h.has(dstr(d)));i++)d.setDate(d.getDate()-1);return(S.salary[m]||{}).expDate||dstr(d)}
+function sal(m){
+ const c=calc(m),r=S.salary[m]||{},n=k=>+r[k]||0,prov=c.confirmed==null,b=prov?c.est:c.confirmed;
+ const gross=c.wages+b+n('ot')+n('other'),ded=n('tax')+n('labor')+n('health')+n('dOther'),net=gross-ded;
+ const paid=r.paid===''||r.paid==null?null:+r.paid,diff=paid==null?null:paid-net;
+ const st=paid==null?'待入帳':(!r.ok||prov)?'待確認':diff===0?'已核對':'有差異';return{c,r,b,prov,gross,ded,net,paid,diff,st,pdte:payDate(m)}}
+function allMonths(){const s=new Set([ym(),...S.shifts.map(x=>x.date.slice(0,7)),...Object.keys(S.targets),...Object.keys(S.salary)]);return[...s].filter(m=>m>=S.startMonth).sort()}
+/* ===== 通知（由資料即時產生，條件解除即自動關閉）===== */
+function gen(){const n=[],now=nowT(),td=dstr(now),N=S.notif,add=(key,cat,title,body,link)=>{if(N[cat]!==false)n.push({key,cat,title,body,link})};
+ const st=s=>new Date(s.date+'T'+s.ss+':00'),en=s=>{const e=new Date(s.date+'T'+s.se+':00');if(M(s.se)<=M(s.ss))e.setDate(e.getDate()+1);return e};
+ S.shifts.filter(s=>worked(s)&&s.ss&&st(s)>now).forEach(s=>{const a=st(s),dayB=new Date(a.getFullYear(),a.getMonth(),a.getDate()-1),lbl=`${s.date.slice(5)}（${WD[pd(s.date).getDay()]}）${s.name} ${s.ss}–${s.se}`;
+  if(N.dayBefore&&now>=dayB)add('sh1-'+s.id+s.date+s.ss,'班表','明天有班',lbl,'sh:'+s.id);
+  if(N.hrs>0&&now>=new Date(a-N.hrs*3600e3))add('sh2-'+s.id+s.date+s.ss,'班表',`上班前 ${N.hrs} 小時`,lbl,'sh:'+s.id)});
+ S.shifts.filter(s=>worked(s)&&s.ss&&en(s)<now).forEach(s=>{const mi=[];if(!s.as)mi.push('實際上班');if(!s.ae)mi.push('實際下班');if(s.ab===''||s.ab==null)mi.push('休息分鐘');if(s.sales===''||s.sales==null)mi.push('當日銷售額');
+  if(mi.length)add('miss-'+s.id,'資料',`${s.date.slice(5)} ${s.name} 缺少資料`,'尚未填寫：'+mi.join('、'),'sh:'+s.id)});
+ const cm=td.slice(0,7)<S.startMonth?S.startMonth:td.slice(0,7);if(!(S.targets[cm]&&+S.targets[cm].goal))add('notgt-'+cm,'資料',cm+' 尚未建立業績目標','請設定月銷售目標與達標獎金','tgt:'+cm);
+ allMonths().forEach(m=>{const c=calc(m),last=new Date(+m.slice(0,4),+m.slice(5),0).getDate();
+  if(c.goal&&c.bonus&&c.confirmed==null&&!c.closed&&(m<cm||(m===cm&&now.getDate()>=last-2)))add('bonus-'+m,'資料',m+' 獎金尚未確認','請填寫實際確認獎金','tgt:'+m);
+  if(m>=cm||!S.shifts.some(s=>s.date.startsWith(m)))return;const x=sal(m);if(x.paid!=null&&x.r.ok)return;
+  const p=pd(x.pdte),d4=new Date(p);d4.setDate(d4.getDate()-1);let t;
+  if(td>x.pdte)t=['逾期','已過預計發薪日（'+x.pdte+'），請確認實際入帳金額並完成薪資核對'];else if(td===x.pdte)t=['發薪日','今天是預計發薪日，請確認實際入帳金額與薪資單'];
+  else if(td>=dstr(d4))t=['準備','即將發薪（'+x.pdte+'），請準備確認薪資'];else if(td>=dstr(new Date(+m.slice(0,4),+m.slice(5),1)))t=['檢查','請檢查 '+m+' 的工時與薪資資料'];
+  if(t)add('pay-'+m+t[0],'工資',m+' 工資確認',t[1],'sal:'+m)});return n}
+let NOTES=[];
+function sync(){NOTES=gen();let ch=false;const iso=nowT().toISOString();
+ NOTES.forEach(n=>{if(!S.noteSeen[n.key]){S.noteSeen[n.key]=iso;ch=true}
+  if(S.notif.push!==false&&!S.pushed[n.key]&&window.Notification&&Notification.permission==='granted'){try{new Notification(n.title,{body:n.body});S.pushed[n.key]=1;ch=true}catch(e){}}});
+ if(ch)persist()}
+const unread=()=>NOTES.filter(n=>!S.noteRead[n.key]).length;
+function openLink(l){const[k,v]=l.split(':');if(k==='sh'){const s=S.shifts.find(x=>x.id===v);if(s){cur=pd(s.date);page='cal';render();shiftForm(v)}}else{cur=pd(v+'-01');go(k)}}
+/* ===== 儲存 ===== */
+function persist(){stat='儲存中…';sv();clearTimeout(saveT);saveT=setTimeout(async()=>{
+ try{localStorage.setItem('mwd',JSON.stringify(S))}catch(e){}
+ try{if(dbDoc){await dbDoc.set({json:JSON.stringify(S)});stat='已儲存 ✓'}else stat='僅存本機（未連線雲端）'}catch(e){stat='儲存失敗：'+(e.message||e.code)}sv()},500)}
+const sv=()=>{const e=$('#sv');if(e)e.textContent=stat};
+const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2200)};
+function load(o){S=Object.assign(DEF(),o);S.notif=Object.assign(DEF().notif,o.notif);S.shifts.forEach(s=>{if(s.status==='預排'||s.status==='已完成')s.status='正常'})}
+async function init(){
+ try{const l=localStorage.getItem('mwd');if(l)load(JSON.parse(l))}catch(e){}
+ render();
+ try{const db=await claude.use('db'),u=await claude.use('user');
+  if(db&&u){dbDoc=db.collection('data/users/'+await u.id()).doc('app');const sn=await dbDoc.get();
+   if(sn.exists&&sn.data().json)load(JSON.parse(sn.data().json));stat='已儲存 ✓';if(!sn.exists)persist()}else stat='僅存本機（未連線雲端）'}catch(e){stat='僅存本機'}
+ render();setInterval(()=>{if(!$('#modal').style.display||$('#modal').style.display==='none')render()},60000)}
+/* ===== 共用 UI ===== */
+const NAV=[['dash','工作總覽'],['cal','排班日曆'],['tgt','每月業績目標'],['sal','薪資核對'],['log','工作紀錄'],['his','歷史紀錄'],['nt','通知中心'],['set','系統設定']];
+const TAB=[['dash','總覽'],['cal','日曆'],['tgt','目標'],['sal','薪資']];
+function go(p){page=p;closeM();render();scrollTo(0,0)}
+function more(){modal(`<h3 style="margin:0 0 8px">更多</h3>${[['log','工作紀錄'],['his','歷史紀錄'],['nt','通知中心'],['set','系統設定']].map(n=>`<button style="width:100%;margin-bottom:8px;text-align:left" onclick="go('${n[0]}')">${n[1]}</button>`).join('')}`)}
+function head(){return `<div class="top"><h2>${NAV.find(x=>x[0]===page)[1]}</h2><button class="bell" onclick="go('nt')">🔔${unread()?`<span class="bd">${unread()}</span>`:''}</button></div>
+<div class="top"><button onclick="mv(-1)">‹</button><input type="month" min="${S.startMonth}" value="${ym()}" style="flex:1;min-width:120px" onchange="if(this.value){cur=pd(this.value+'-01');render()}"><button onclick="mv(1)">›</button><span class="sv" id="sv">${stat}</span></div>`}
+function mv(n){if(page==='cal'&&cal==='week')cur.setDate(cur.getDate()+7*n);else cur=new Date(cur.getFullYear(),cur.getMonth()+n,1);render()}
+function render(){if(ym()<S.startMonth)cur=pd(S.startMonth+'-01');sync();
+ $('#nav').innerHTML='<h1>MY WORK</h1>'+NAV.map(n=>`<a class="${page===n[0]?'on':''}" onclick="go('${n[0]}')">${n[1]}${n[0]==='nt'&&unread()?` <span class="tag">${unread()}</span>`:''}</a>`).join('');
+ $('#tab').innerHTML=TAB.map(n=>`<a class="${page===n[0]?'on':''}" onclick="go('${n[0]}')">${n[1]}</a>`).join('')+`<a class="${['log','his','nt','set'].includes(page)?'on':''}" onclick="more()">更多</a>`;
+ $('#main').innerHTML=head()+({dash,cal:calP,tgt,sal:salP,log:logP,his,nt:ntP,set}[page])()}
+const modal=h=>{$('#modal').innerHTML='<div>'+h+'</div>';$('#modal').style.display='flex'};
+const closeM=()=>{$('#modal').style.display='none'};
+let okFn=null;
+function ask(msg,fn){okFn=fn;modal(`<p>${msg}</p><div class="acts"><button onclick="closeM()">取消</button><button class="p" onclick="closeM();okFn()">確認</button></div>`)}
+function bars(items,fmt=v=>Math.round(v).toLocaleString('en-US'),line){
+ if(!items.length)return'<div class="sub">尚無資料</div>';const W=Math.max(320,items.length*(items[0].v.length*14+12)),H=140,mx=Math.max(1,line||0,...items.flatMap(i=>i.v.map(x=>x||0)));
+ const bw=items[0].v.length>1?12:Math.min(18,W/items.length-4);let o=`<div class="sc"><svg viewBox="0 0 ${W} ${H+24}" width="100%" style="min-width:${Math.min(W,520)}px">`;
+ items.forEach((it,i)=>{const x=i*(W/items.length)+3;it.v.forEach((v,j)=>{const h=(v||0)/mx*H;o+=`<rect x="${x+j*(bw+2)}" y="${H-h}" width="${bw}" height="${h}" rx="3" fill="${j?'var(--ac2)':'var(--ac)'}"><title>${it.l}：${fmt(v||0)}</title></rect>`});
+  o+=`<text x="${x}" y="${H+14}" font-size="10" fill="var(--mu)">${it.l}</text>`});return o+'</svg></div>'}
+/* ===== 工作總覽 ===== */
+function dash(){const m=ym(),x=sal(m),c=x.c,now=nowT();
+ const up=S.shifts.filter(s=>worked(s)&&s.ss&&new Date(s.date+'T'+s.ss+':00')>now).sort((a,b)=>(a.date+a.ss)<(b.date+b.ss)?-1:1).slice(0,2);
+ const days=new Date(cur.getFullYear(),cur.getMonth()+1,0).getDate(),dly=[];for(let d=1;d<=days;d++){const k=m+'-'+P(d);dly.push({l:d,v:[c.sh.filter(s=>s.date===k&&valid(s)).reduce((a,s)=>a+(+s.sales||0),0)]})}
+ const wk=[0,1,2,3,4].map(i=>({l:'W'+(i+1),v:[c.sh.filter(s=>Math.floor((+s.date.slice(8)-1)/7)===i).reduce((a,s)=>a+(actMin(s)||0),0)/60]}));
+ const ms=allMonths().slice(-6).map(k=>{const y=sal(k);return{l:k.slice(2),v:[y.net,y.paid||0]}});const gap=c.goal-c.sales,td=NOTES.slice(0,4);
+ return `<div class="grid">
+ <div class="card"><div class="k">${m}・${c.closed?'已結算':'進行中'}</div><div class="v">${hm(c.mins)}</div><div class="sub">已完成 ${c.done} ／ 預計 ${c.plan} 班</div></div>
+ <div class="card"><div class="k">預估基本工資</div><div class="v">${nt(c.wages)}</div></div>
+ <div class="card"><div class="k">本月應發薪資${x.prov&&x.b?'（獎金暫估）':''}</div><div class="v">${nt(x.gross)}</div></div>
+ <div class="card"><div class="k">預估實領薪資</div><div class="v">${nt(x.net)}</div><div class="sub">扣款 ${nt(x.ded)}</div></div>
+ <div class="card"><div class="k">累積銷售額</div><div class="v">${nt(c.sales)}</div><div class="sub">目標 ${c.goal?nt(c.goal):'未設定'}</div></div>
+ <div class="card"><div class="k">達成率</div><div class="v">${pc(c.rate)}</div><div class="sub">${!c.goal?'':gap>0?'尚差 '+nt(gap):'超標 '+nt(-gap)}・獎金 ${nt(c.est)}</div></div></div>
+ <div class="card"><div class="bar"><i style="width:${Math.min(100,(c.rate||0)*100)}%"></i></div><div class="sub">月目標達成進度</div></div>
+ <div class="card"><b>近期班表</b>${up.length?up.map((s,i)=>`<div style="padding:8px 0;cursor:pointer" onclick="shiftForm('${s.id}')"><span class="tag">${i?'下下次':'下一次'}</span> ${s.date.slice(5).replace('-','/')}（${WD[pd(s.date).getDay()]}）${esc(s.name)}　${s.ss}–${s.se}</div>`).join(''):'<div class="sub">沒有未來的有效班次</div>'}</div>
+ <div class="card"><b>待處理提醒</b>${td.length?td.map(n=>`<div class="note" onclick="S.noteRead['${n.key}']=1;persist();openLink('${n.link}')"><div><b>${esc(n.title)}</b><div class="sub">${esc(n.body)}</div></div></div>`).join('')+(NOTES.length>4?`<div class="sub" style="padding-top:8px" onclick="go('nt')">還有 ${NOTES.length-4} 則…</div>`:''):'<div class="sub">目前沒有待辦 🎉</div>'}</div>
+ <div class="card"><b>每日銷售額</b>${bars(dly)}</div><div class="card"><b>每週實際工時（小時）</b>${bars(wk,v=>v.toFixed(1))}</div>
+ <div class="card"><b>薪資趨勢</b> <span class="sub">深＝預估實領　淺＝實際入帳</span>${bars(ms)}</div>`}
+/* ===== 日曆 ===== */
+function chip(s,c){const m=actMin(s),dt=c.dt[s.id],cls={正常:'c',請假:'l',取消:'x',調班:'m'}[s.status];
+ return `<div class="chip ${cls}" onclick="event.stopPropagation();shiftForm('${s.id}')"><b style="color:inherit">${esc(s.name.split(' ')[0])}</b> ${s.status==='正常'?'':s.status}<span class="x"> ${sh_(m)}${s.sales?'<br>'+nt(s.sales)+(dt?' ('+pc(s.sales/dt)+')':''):''}</span></div>`}
+function calP(){const c=calc(ym());
+ const bt=['month','week','list'].map((k,i)=>`<button class="${cal===k?'on':''}" onclick="cal='${k}';render()">${['月','週','列表'][i]}</button>`).join('');let body='';
+ if(cal==='list')body=`<div class="card sc"><table><tr><th>日期</th><th>班次</th><th>狀態</th><th>工時</th><th>工資</th><th>銷售</th><th>目標</th></tr>${c.sh.map(s=>`<tr style="cursor:pointer" onclick="shiftForm('${s.id}')"><td>${s.date.slice(5)}（${WD[pd(s.date).getDay()]}）</td><td>${esc(s.name)}</td><td>${s.status}</td><td>${hm(actMin(s))}</td><td>${nt(wage(s))}</td><td>${nt(s.sales||0)}</td><td>${c.dt[s.id]!=null?nt(c.dt[s.id]):'—'}</td></tr>`).join('')||'<tr><td colspan=7>本月無班次</td></tr>'}</table></div>`;
+ else{let st,n;if(cal==='week'){st=new Date(cur);st.setDate(st.getDate()-st.getDay());n=7}else{st=new Date(cur.getFullYear(),cur.getMonth(),1);const f=st.getDay();st.setDate(1-f);n=Math.ceil((f+new Date(cur.getFullYear(),cur.getMonth()+1,0).getDate())/7)*7}
+  body='<div class="cal">'+[...WD].map(w=>`<div class="h">${w}</div>`).join('');
+  for(let i=0;i<n;i++){const d=new Date(st);d.setDate(st.getDate()+i);const k=dstr(d),cc=calc(k.slice(0,7));
+   body+=`<div class="cell ${k.slice(0,7)!==ym()&&cal==='month'?'o':''} ${k===today()?'t':''}" onclick="shiftForm('','${k}')"><b>${d.getDate()}</b>${S.shifts.filter(s=>s.date===k).map(s=>chip(s,cc)).join('')}</div>`}body+='</div>'}
+ return `<div class="top">${bt}<button class="p" style="margin-left:auto" onclick="shiftForm('','${today()}')">＋ 班次</button></div>${body}<div class="sub" style="margin-top:8px">點日期新增，點班次卡片查看或修改。</div>`}
+function shiftForm(id,date){
+ const s=S.shifts.find(x=>x.id===id)||(()=>{const t=S.tpls.find(t=>t.on)||{};return{id:'',date,status:'正常',tpl:t.id,name:'',ss:t.s||'',se:t.e||'',sb:t.b??S.defBreak,as:'',ae:'',ab:'',sales:''}})();
+ const f=(i,l,t,v,x='')=>`<div><label>${l}</label><input id="${i}" type="${t}" value="${esc(v??'')}" ${x} oninput="pv()"></div>`;
+ modal(`<h3 style="margin:0">${id?'編輯班次':'新增班次'}</h3><input type="hidden" id="f_id" value="${id}">
+ <div class="row k2">${f('f_date','日期','date',s.date)}<div><label>出勤狀態</label><select id="f_st" onchange="pv()">${['正常','請假','調班','取消'].map(x=>`<option ${x===s.status?'selected':''}>${x}</option>`).join('')}</select></div></div>
+ <div id="adj" style="display:none;background:var(--bg);border-radius:12px;padding:8px 10px;margin-top:8px"><b>調班紀錄</b>（上方日期與時間為調整後的正式班次）
+  <div class="row">${f('f_od','調整前日期','date',s.orig?.date||'')}${f('f_on','調整前班別','text',s.orig?.name||'','placeholder="例：B 11:00–20:00"')}</div>${f('f_nt','調整原因','text','')}
+  ${(s.log||[]).map(l=>`<div class="sub">${l.at}：${l.fromDate||'?'} ${esc(l.from)} → ${l.toDate} ${esc(l.to)} ${esc(l.note)}</div>`).join('')}</div>
+ <div class="row"><div><label>班別</label><select id="f_tpl" onchange="tplPick()"><option value="">自訂</option>${S.tpls.filter(t=>t.on||t.id===s.tpl).map(t=>`<option value="${t.id}" ${t.id===s.tpl?'selected':''}>${esc(t.name)} ${t.s}–${t.e}</option>`).join('')}</select></div>${f('f_name','班次名稱（留空自動產生）','text',s.name)}</div>
+ <div class="row k2">${f('f_ss','預定上班','time',s.ss)}${f('f_se','預定下班','time',s.se)}</div>${f('f_sb','預定休息（分鐘）','number',s.sb,'min=0')}
+ <div class="row k2">${f('f_as','實際上班','time',s.as)}${f('f_ae','實際下班','time',s.ae)}</div>
+ <div class="row k2">${f('f_ab','實際休息（分鐘）','number',s.ab,'min=0 placeholder="空白＝0"')}${f('f_sales','當日銷售額','number',s.sales,'min=0')}</div>
+ <div class="pv" id="pv"></div><div class="bad" id="err"></div>
+ <div class="acts">${id?'<button class="d" onclick="delShift()">刪除</button>':''}<button onclick="closeM()">取消</button><button class="p" onclick="saveShift()">儲存</button></div>`);pv()}
+const g=i=>$('#'+i).value;
+function tplPick(){const t=S.tpls.find(t=>t.id===g('f_tpl'));if(t){$('#f_ss').value=t.s;$('#f_se').value=t.e;$('#f_sb').value=t.b}pv()}
+function tmp(){return{date:g('f_date'),status:g('f_st'),ss:g('f_ss'),se:g('f_se'),sb:+g('f_sb')||0,as:g('f_as'),ae:g('f_ae'),ab:+g('f_ab')||0,sales:+g('f_sales')||0}}
+function pv(){const s=tmp(),m=actMin(s);$('#adj').style.display=s.status==='調班'?'block':'none';$('#pv').innerHTML=`預定工時：${hm(schedMin(s))}<br>實際工時：${m==null?'尚未填寫':hm(m)}　工資：${m==null?'—':nt(wage(s))}`}
+function saveShift(){const s=tmp();let e='';
+ if(!s.date)e='請選擇日期';else if(!s.ss||!s.se)e='請填寫預定上下班時間';else if(g('f_as')&&!g('f_ae')&&s.date<today())e='過去的班次請填寫實際下班時間';else if(s.sales<0)e='銷售額不可為負';
+ if(e){$('#err').textContent=e;return}
+ const t=S.tpls.find(t=>t.id===g('f_tpl')),id=g('f_id'),nm=g('f_name').trim()||((t?t.name:'班')+' '+s.date.slice(5)),prev=S.shifts.find(x=>x.id===id);
+ let log=prev?.log||[],orig=prev?.orig||null;
+ if(s.status==='調班'){const od=g('f_od'),on=g('f_on'),was=prev&&prev.status==='調班';if(!orig&&(od||on))orig={date:od||prev?.date||s.date,name:on};
+  if(!was||prev.date!==s.date||prev.ss!==s.ss||prev.se!==s.se)log=[...log,{at:today(),fromDate:was?prev.date:(od||prev?.date||''),from:was?prev.name:(on||prev?.name||''),toDate:s.date,to:nm,note:g('f_nt')}]}
+ const o={...s,id:id||uid(),name:nm,tpl:g('f_tpl'),ab:g('f_ab'),sales:g('f_sales'),log,orig};
+ if(id)S.shifts=S.shifts.map(x=>x.id===id?o:x);else S.shifts.push(o);persist();closeM();render()}
+function delShift(){const id=g('f_id');ask('確定要刪除這筆班次嗎？此動作無法復原。',()=>{S.shifts=S.shifts.filter(x=>x.id!==id);S.logs.forEach(l=>{if(l.shift===id)l.shift=''});persist();render()})}
+/* ===== 月目標 ===== */
+function tgt(){const m=ym(),c=calc(m),t=S.targets[m]||{},gap=c.goal-c.sales,lock=c.closed;
+ return `<div class="card"><div class="row k2"><div><label>月銷售目標（NT$）</label><input type="number" min=0 value="${t.goal??''}" ${lock?'disabled':''} onchange="setT('goal',this.value)"></div><div><label>達標獎金（NT$）</label><input type="number" min=0 value="${t.bonus??''}" ${lock?'disabled':''} onchange="setT('bonus',this.value)"></div></div>
+ <div class="sub" style="margin-top:6px">${lock?'本月已結算，顯示結算快照。要修改請先解除結算。':'其餘欄位由系統依班次自動計算。'}</div></div>
+ <div class="grid"><div class="card"><div class="k">累積銷售額</div><div class="v">${nt(c.sales)}</div></div>
+ <div class="card"><div class="k">達成率</div><div class="v">${pc(c.rate)}</div><div class="sub">${!c.goal?'尚未設定目標':gap>0?'距離目標 '+nt(gap):'超標 '+nt(-gap)}</div></div>
+ <div class="card"><div class="k">有效排班工時</div><div class="v">${hm(c.total)}</div><div class="sub">${c.plan} 班${c.goal&&c.total?'・每小時 '+nt(c.goal/(c.total/60)):''}</div></div>
+ <div class="card"><div class="k">預估獎金</div><div class="v">${nt(c.est)}</div><div class="sub">達標獎金 ${nt(c.bonus)}</div></div></div>
+ <div class="card"><div class="bar"><i style="width:${Math.min(100,(c.rate||0)*100)}%"></i></div>
+ <label>實際確認獎金（公司核發後填寫；空白＝尚未確認）</label><input type="number" min=0 value="${c.confirmed??''}" placeholder="預估 ${nt(c.est)}" onchange="setT('confirmed',this.value)">
+ <div class="acts" style="justify-content:space-between;align-items:center"><span class="tag">${lock?'已結算 '+(c.at||''):'未結算'}</span>${lock?`<button onclick="unsettle()">解除結算</button>`:`<button class="p" onclick="settle()">完成月份結算</button>`}</div></div>
+ <div class="card sc"><b>每日目標明細</b>（依預定工時加權；請假、取消排除）${!c.total?'<div class="sub">尚無有效排班</div>':`<table><tr><th>日期</th><th>班次</th><th>預定工時</th><th>每日目標</th><th>銷售</th><th>達成</th></tr>${c.sh.filter(valid).map(s=>`<tr><td>${s.date.slice(5)}</td><td>${esc(s.name)}</td><td>${hm(schedMin(s))}</td><td>${c.dt[s.id]!=null?nt(c.dt[s.id]):'—'}</td><td>${nt(s.sales||0)}</td><td>${c.dt[s.id]?pc((s.sales||0)/c.dt[s.id]):'—'}</td></tr>`).join('')}</table>`}</div>`}
+function setT(k,v){const m=ym();S.targets[m]=S.targets[m]||{};S.targets[m][k]=v===''?(k==='confirmed'?null:''):+v;persist();render()}
+function settle(){const m=ym();ask(`確定結算 ${m}？將保存班次、工時、時薪、目標、每日目標與獎金快照。`,()=>{const c=calc(m);S.closed[m]={goal:c.goal,bonus:c.bonus,total:c.total,sales:c.sales,wages:c.wages,mins:c.mins,done:c.done,plan:c.plan,dt:c.dt,confirmed:c.confirmed,hourly:rateAt(m+'-01'),at:today(),shifts:JSON.parse(JSON.stringify(c.sh))};persist();render()})}
+function unsettle(){const m=ym();ask('解除結算後，數字會依最新班次與設定重新計算。確定嗎？',()=>{delete S.closed[m];persist();render()})}
+/* ===== 薪資 ===== */
+function salP(){const m=ym(),x=sal(m),r=x.r,cl={已核對:'ok',有差異:'bad',待確認:'warn',待入帳:''}[x.st];
+ const I=(k,l,t='number',ex='')=>`<div><label>${l}</label><input type="${t}" value="${esc(r[k]??'')}" ${ex} onchange="setS('${k}',this.value,${t==='number'?0:1})"></div>`;
+ return `<div class="grid"><div class="card"><div class="k">應發薪資</div><div class="v">${nt(x.gross)}</div></div><div class="card"><div class="k">實領薪資</div><div class="v">${nt(x.net)}</div></div>
+ <div class="card"><div class="k">實際入帳</div><div class="v">${x.paid==null?'—':nt(x.paid)}</div></div><div class="card"><div class="k">薪資差額</div><div class="v ${x.diff?'bad':''}">${x.diff==null?'—':nt(x.diff)}</div></div>
+ <div class="card"><div class="k">核對狀態</div><div class="v ${cl}">${x.st}</div></div><div class="card"><div class="k">預計發薪日</div><div class="v" style="font-size:17px">${x.pdte}</div></div></div>
+ <div class="card"><b>${m} 薪資（工作月份）</b>
+ <div class="pv">預估基本工資 ${nt(x.c.wages)}<br>${x.prov?'預估獎金（暫估）':'確認獎金'} ${nt(x.b)}</div>
+ <div class="row k2">${I('ot','加班費')}${I('other','其他應發項目')}</div>
+ <div class="pv">應發薪資 ＝ 基本工資＋獎金＋加班費＋其他 ＝ <b>${nt(x.gross)}</b></div>
+ <div class="sub" style="margin-top:8px">扣款請依實際薪資單填寫，系統不會自行推測。</div>
+ <div class="row k2">${I('tax','所得稅')}${I('labor','勞保自付額')}${I('health','健保自付額')}${I('dOther','其他扣款')}</div>
+ <div class="pv">實領薪資 ＝ 應發 − 扣款 ${nt(x.ded)} ＝ <b>${nt(x.net)}</b></div>
+ <div class="row k2">${I('paid','實際入帳金額')}${I('date','實際入帳日期（可與工作月份不同）','date')}</div>
+ <div class="row k2">${I('expDate','預計發薪日（可調整）','date')}${I('note','差額備註','text','placeholder="例：勞健保扣款"')}</div>
+ <label>薪資單附件</label>${r.slip?`<div><a href="${esc(r.slip.url)}" target="_blank" rel="noopener">📎 ${esc(r.slip.name)}</a> <button class="d" onclick="setS('slip',null,1)">移除</button></div>`:''}<input type="file" accept="image/*,application/pdf" onchange="slip(this)">
+ <label style="margin-top:12px"><input type="checkbox" ${r.ok?'checked':''} onchange="setS('ok',this.checked,1)"> 我已對照薪資單完成核對（獎金需先於「每月業績目標」確認）</label></div>`}
+function setS(k,v,str){const m=ym();S.salary[m]=S.salary[m]||{};S.salary[m][k]=str?v:(v===''?'':+v);persist();render()}
+async function slip(i){const f=i.files[0];if(!f)return;try{const a=await claude.use('assets');if(!a){toast('此帳號無法上傳附件');return}const u=await a.upload(f);setS('slip',{name:f.name,url:u.url},1);toast('已上傳')}catch(e){toast('上傳失敗：'+(e.message||''))}}
+/* ===== 工作紀錄 ===== */
+function logP(){const L=S.logs.filter(l=>(!lf.r||l.resume)&&(!lf.c||l.cat===lf.c)).sort((a,b)=>a.date<b.date?1:-1);
+ return `<div class="top"><button class="p" onclick="logForm('')">＋ 新增紀錄</button><label style="margin:0"><input type="checkbox" ${lf.r?'checked':''} onchange="lf.r=this.checked;render()"> 履歷素材</label><select style="flex:1" onchange="lf.c=this.value;render()"><option value="">全部類別</option>${S.cats.map(c=>`<option ${c===lf.c?'selected':''}>${esc(c)}</option>`).join('')}</select></div>
+ ${L.map(l=>`<div class="card" style="cursor:pointer" onclick="logForm('${l.id}')"><b>${esc(l.title)}</b> ${l.resume?'<span class="tag">★ 履歷素材</span>':''}<div class="sub">${l.date}・${esc(l.cat)}${l.shift?'・已連結班次':''}</div><div style="margin-top:6px;white-space:pre-wrap">${esc(l.what)}</div>${l.result?`<div style="margin-top:6px"><b>成果：</b><span style="white-space:pre-wrap">${esc(l.result)}</span></div>`:''}</div>`).join('')||'<div class="card sub">還沒有紀錄</div>'}`}
+function logForm(id){const l=S.logs.find(x=>x.id===id)||{id:'',title:'',date:today(),cat:S.cats[0],what:'',result:'',resume:false,shift:''};const sh=[...S.shifts].sort((a,b)=>a.date<b.date?1:-1).slice(0,60);
+ modal(`<h3 style="margin:0">${id?'編輯':'新增'}工作紀錄</h3><input type="hidden" id="l_id" value="${id}"><label>記錄標題</label><input id="l_t" value="${esc(l.title)}">
+ <div class="row k2"><div><label>日期</label><input type="date" id="l_d" value="${l.date}"></div><div><label>類別</label><select id="l_c">${S.cats.map(c=>`<option ${c===l.cat?'selected':''}>${esc(c)}</option>`).join('')}</select></div></div>
+ <label>工作內容</label><textarea id="l_w" rows=3>${esc(l.what)}</textarea><label>完成結果／成果（盡量寫具體數字）</label><textarea id="l_r" rows=3>${esc(l.result)}</textarea>
+ <label>關聯班次（可選）</label><select id="l_s"><option value="">不關聯</option>${sh.map(s=>`<option value="${s.id}" ${s.id===l.shift?'selected':''}>${s.date} ${esc(s.name)}</option>`).join('')}</select>
+ <label><input type="checkbox" id="l_x" ${l.resume?'checked':''}> 可作為履歷素材</label><div class="bad" id="err"></div>
+ <div class="acts">${id?'<button class="d" onclick="delLog()">刪除</button>':''}<button onclick="closeM()">取消</button><button class="p" onclick="saveLog()">儲存</button></div>`)}
+function saveLog(){if(!g('l_t').trim()||!g('l_d')){$('#err').textContent='請填寫標題與日期';return}
+ const id=g('l_id'),o={id:id||uid(),title:g('l_t').trim(),date:g('l_d'),cat:g('l_c'),what:g('l_w'),result:g('l_r'),shift:g('l_s'),resume:$('#l_x').checked};
+ if(id)S.logs=S.logs.map(x=>x.id===id?o:x);else S.logs.push(o);persist();closeM();render()}
+function delLog(){const id=g('l_id');ask('確定刪除這筆工作紀錄？',()=>{S.logs=S.logs.filter(x=>x.id!==id);persist();render()})}
+/* ===== 歷史 ===== */
+function his(){const rows=allMonths().reverse().map(k=>sal(k));
+ return `<div class="top"><button onclick="csv('m')">月份彙總 CSV</button><button onclick="csv('s')">班次明細 CSV</button><button onclick="csv('l')">工作紀錄 CSV</button><button onclick="csv('b')">完整備份 JSON</button></div>
+ <div class="card sc"><table><tr><th>月份</th><th>工時</th><th>銷售額</th><th>達成率</th><th>應發</th><th>實領</th><th>實際入帳</th><th>差額</th><th>入帳日</th><th>狀態</th><th>結算</th></tr>
+ ${rows.map(x=>`<tr style="cursor:pointer" onclick="cur=pd('${x.c.m}-01');go('cal')"><td>${x.c.m}</td><td>${hm(x.c.mins)}</td><td>${nt(x.c.sales)}</td><td>${pc(x.c.rate)}</td><td>${nt(x.gross)}</td><td>${nt(x.net)}</td><td>${x.paid==null?'—':nt(x.paid)}</td><td>${x.diff==null?'—':nt(x.diff)}</td><td>${x.r.date||'—'}</td><td>${x.st}</td><td>${x.c.closed?'已結算':'—'}</td></tr>`).join('')}</table><div class="sub">點月份可查看該月班表。已結算月份顯示結算快照。</div></div>`}
+function csv(k){const q=a=>a.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',');let R;
+ if(k==='m')R=[q(['月份','工時(分)','銷售額','目標','達成率','獎金','基本工資','應發','所得稅','勞保','健保','其他扣款','實領','實際入帳','差額','入帳日','狀態','備註']),...allMonths().map(m=>{const x=sal(m),r=x.r;return q([m,x.c.mins,x.c.sales,x.c.goal,x.c.rate==null?'':(x.c.rate*100).toFixed(1)+'%',x.b,x.c.wages,x.gross,r.tax,r.labor,r.health,r.dOther,x.net,x.paid,x.diff,r.date,x.st,r.note])})];
+ else if(k==='s')R=[q(['日期','班次','狀態','預定上班','預定下班','實際上班','實際下班','休息(分)','實際工時(分)','工資','銷售額']),...[...S.shifts].sort((a,b)=>a.date<b.date?-1:1).map(s=>q([s.date,s.name,s.status,s.ss,s.se,s.as,s.ae,s.ab,actMin(s),wage(s),s.sales]))];
+ else if(k==='l')R=[q(['標題','日期','類別','工作內容','成果','履歷素材']),...S.logs.map(l=>q([l.title,l.date,l.cat,l.what,l.result,l.resume?'是':'否']))];
+ else R=[JSON.stringify(S)];
+ const data='\ufeff'+R.join('\n'),name={m:'monthly.csv',s:'shifts.csv',l:'worklog.csv',b:'backup.json'}[k];
+ if(!window.claude){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data]));a.download=name;a.click();return}
+ claude.use('downloads').then(d=>d?d.save({filename:name,data}).catch(()=>{}):modal(`<p>無法直接下載，請複製以下內容：</p><textarea rows=10 onclick="this.select()">${esc(data)}</textarea><div class="acts"><button onclick="closeM()">關閉</button></div>`))}
+/* ===== 通知中心 ===== */
+function ntP(){const L=NOTES.filter(n=>nf==='all'||(nf==='u'?!S.noteRead[n.key]:n.cat===nf));
+ return `<div class="top">${[['all','全部'],['u','未讀'],['班表','班表'],['工資','工資'],['資料','資料']].map(t=>`<button class="${nf===t[0]?'on':''}" onclick="nf='${t[0]}';render()">${t[1]}</button>`).join('')}<button onclick="NOTES.forEach(n=>S.noteRead[n.key]=1);persist();render()">全部已讀</button></div>
+ <div class="card">${L.map(n=>`<div class="note ${S.noteRead[n.key]?'':'u'}" onclick="S.noteRead['${n.key}']=1;persist();openLink('${n.link}')"><div style="flex:1"><b>${esc(n.title)}</b> <span class="tag">${n.cat}</span><div class="sub">${esc(n.body)}</div><div class="sub">${(S.noteSeen[n.key]||'').slice(0,16).replace('T',' ')}・點擊前往</div></div></div>`).join('')||'<div class="sub">沒有通知。資料補齊或事項完成後，相關通知會自動消失。</div>'}</div>`}
+/* ===== 設定 ===== */
+function set(){const N=S.notif,perm=window.Notification?Notification.permission:'unsupported';
+ return `<div class="card"><b>時薪（依生效日期）</b><div class="sc"><table>${[...S.rates].sort((a,b)=>a.from<b.from?-1:1).map(r=>`<tr><td>${r.from==='2000-01-01'?'起始':r.from} 起</td><td>NT$${r.rate}/小時</td><td><button class="d" onclick="delRate('${r.from}')">刪除</button></td></tr>`).join('')}</table></div>
+ <div class="row k2"><div><label>新時薪生效日</label><input type="date" id="r_d"></div><div><label>時薪（NT$）</label><input type="number" id="r_v"></div></div><div class="acts"><button class="p" onclick="addRate()">新增時薪</button></div><div class="sub">新時薪只影響生效日之後的班次。</div></div>
+ <div class="card"><b>班別設定</b><div class="sub">名稱／上班／下班／休息分鐘</div>${S.tpls.map(t=>`<div style="display:grid;grid-template-columns:44px 1fr 1fr 56px;gap:5px;margin-top:6px"><input value="${esc(t.name)}" onchange="upT('${t.id}','name',this.value)"><input type="time" value="${t.s}" onchange="upT('${t.id}','s',this.value)"><input type="time" value="${t.e}" onchange="upT('${t.id}','e',this.value)"><input type="number" value="${t.b}" onchange="upT('${t.id}','b',+this.value)"><label style="margin:0"><input type="checkbox" ${t.on?'checked':''} onchange="upT('${t.id}','on',this.checked)"> 啟用</label><button class="d" onclick="delT('${t.id}')" style="grid-column:2/5">刪除此班別</button></div>`).join('')}<div class="acts"><button class="p" onclick="S.tpls.push({id:uid(),name:'新',s:'09:00',e:'18:00',b:S.defBreak,on:true});persist();render()">＋ 新增班別</button></div></div>
+ <div class="card"><b>計算與發薪</b><div class="row k2"><div><label>預設休息分鐘</label><input type="number" value="${S.defBreak}" onchange="S.defBreak=+this.value;persist()"></div><div><label>每月發薪日（次月）</label><input type="number" min=1 max=28 value="${S.payDay}" onchange="S.payDay=+this.value||5;persist();render()"></div></div>
+ <label>休息日／國定假日（YYYY-MM-DD，逗號分隔；週末自動視為休息日，發薪日會提前至前一營業日）</label><textarea rows=2 onchange="S.holidays=this.value;persist();render()">${esc(S.holidays)}</textarea>
+ <label>開始使用月份</label><input type="month" value="${S.startMonth}" onchange="if(this.value){S.startMonth=this.value;persist();render()}"><label>達標條件</label><select onchange="S.bonusRule=this.value;persist()"><option value="ge" ${S.bonusRule==='ge'?'selected':''}>累積銷售額 ≥ 月目標</option><option value="gt" ${S.bonusRule==='gt'?'selected':''}>累積銷售額 ＞ 月目標</option></select>
+ <label><input type="checkbox" ${S.countLeave?'checked':''} onchange="S.countLeave=this.checked;persist();render()"> 請假班次也納入每日目標分配（預設排除）</label><div class="sub">時區 Asia/Taipei・貨幣 TWD</div></div>
+ <div class="card"><b>通知</b>${['班表','工資','資料'].map(k=>`<label style="margin:6px 0"><input type="checkbox" ${N[k]!==false?'checked':''} onchange="S.notif['${k}']=this.checked;persist();render()"> ${k}提醒</label>`).join('')}
+ <label style="margin:6px 0"><input type="checkbox" ${N.dayBefore?'checked':''} onchange="S.notif.dayBefore=this.checked;persist()"> 上班前一天提醒</label>
+ <label>上班前幾小時提醒（0＝關閉）</label><input type="number" min=0 value="${N.hrs}" onchange="S.notif.hrs=+this.value||0;persist();render()">
+ <label style="margin-top:10px"><input type="checkbox" ${N.push!==false?'checked':''} onchange="S.notif.push=this.checked;persist()"> 瀏覽器推播</label>
+ <div class="acts" style="justify-content:space-between;align-items:center"><span class="sub">權限：${perm}</span><button onclick="askPerm()">開啟推播權限</button></div>
+ <div class="sub">推播在頁面開啟（含背景分頁）時發送；頁面關閉時只會在下次開啟後於通知中心顯示。</div></div>
+ <div class="card"><b>工作紀錄類別</b><div style="margin:8px 0">${S.cats.map((c,i)=>`<span class="tag" style="margin:2px">${esc(c)} <a onclick="S.cats.splice(${i},1);persist();render()" style="cursor:pointer">✕</a></span>`).join('')}</div><div class="row k2"><input id="c_n" placeholder="新類別"><button onclick="if(g('c_n').trim()){S.cats.push(g('c_n').trim());persist();render()}">新增</button></div></div>`}
+async function askPerm(){try{const p=await Notification.requestPermission();toast('通知權限：'+p)}catch(e){toast('此環境不支援推播')}render()}
+function addRate(){if(!g('r_d')||!g('r_v')){toast('請填寫生效日與時薪');return}S.rates=S.rates.filter(r=>r.from!==g('r_d'));S.rates.push({from:g('r_d'),rate:+g('r_v')});persist();render()}
+function delRate(f){if(S.rates.length<2)return;ask('刪除這筆時薪設定？',()=>{S.rates=S.rates.filter(r=>r.from!==f);persist();render()})}
+function upT(id,k,v){S.tpls.find(t=>t.id===id)[k]=v;persist()}
+function delT(id){ask('刪除這個班別？已建立的班次不受影響。',()=>{S.tpls=S.tpls.filter(t=>t.id!==id);persist();render()})}
+init();
+</script></body></html>
